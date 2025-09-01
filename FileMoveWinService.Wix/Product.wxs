@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="DD01C7DF-C46D-4CD6-B61C-5863D7850B19"
+			 Name="FileMoverService"
+			 Language="1033"
+			 Version="1.0.0.0"
+			 Manufacturer="Larry Solis"
+			 UpgradeCode="A1234567-B123-4567-8901-1234567890AB">
+
+		<!-- Package settings -->
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+
+		<!-- Ensure CAB is embedded in the MSI -->
+		<Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+		<!-- Handle upgrades -->
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+		<!-- Features -->
+		<Feature Id="ProductFeature" Title="FileMoverService" Level="1">
+			<ComponentGroupRef Id="FileMoverServiceComponents" />
+		</Feature>
+	</Product>
+
+	<!-- Directory structure -->
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="FileMoverService" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<!-- Components -->
+	<Fragment>
+		<ComponentGroup Id="FileMoverServiceComponents" Directory="INSTALLFOLDER">
+			<Component Id="FileMoverServiceEXE" Guid="A2345678-B234-4567-8901-234567890ABC">
+				<!-- Service EXE from project reference -->
+				<File Id="FileMoverServiceEXE" Source="$(var.FileMoveWinService.TargetPath)" KeyPath="yes" />
+
+				<!-- Install the Windows Service -->
+				<ServiceInstall
+					Id="ServiceInstaller"
+					Type="ownProcess"
+					Name="FileMoverService"
+					DisplayName="File Mover Service"
+					Description="Moves files from C:\Folder1 to C:\Folder2 and logs events"
+					Start="auto"
+					ErrorControl="normal"
+					Account="LocalSystem" />
+
+				<!-- Control service start/stop during install/uninstall -->
+				<ServiceControl
+					Id="StartService"
+					Name="FileMoverService"
+					Start="install"
+					Stop="both"
+					Remove="uninstall"
+					Wait="yes" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
